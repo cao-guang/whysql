@@ -17,3 +17,6 @@ func SafeReplaceParames(param string) string {
 	a = strings.Replace(a, "--", "", -1)
 	return a
 }
+
+
+
