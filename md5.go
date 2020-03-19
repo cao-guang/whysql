@@ -23,3 +23,5 @@ func MD5(msg string, upper bool) string {
 	}
 	return hex.EncodeToString(cipherStr)
 }
+
+
