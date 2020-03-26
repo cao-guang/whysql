@@ -538,9 +538,9 @@ func Map_GetParamsMap(h string, model interface{}) (string, map[string]interface
 		if err := json.Unmarshal([]byte(h), &model); err != nil {
 			return BackErr("序列化对象失败", nil), m2, errors.New("序列化对象失败")
 		}
-		pars, _ok := m["parames"]
-		if _ok {
-			str := string(pars.(string))
+		//pars, _ok := m["parames"]
+		//if _ok {
+			str := h
 			if err := json.Unmarshal([]byte(str), &m2); err == nil {
 				for k, _ := range m2 {
 					if strings.ToUpper(k) != k {
@@ -549,10 +549,12 @@ func Map_GetParamsMap(h string, model interface{}) (string, map[string]interface
 					}
 				}
 				return "", m2, nil
+			}else{
+				return "", m2, nil
 			}
-		} else {
-			return "", m2, nil
-		}
+		//} else {
+		//	return "", m2, nil
+		//}
 	}
 	return BackErr("序列化对象失败", nil), m2, errors.New("序列化对象失败")
 }
