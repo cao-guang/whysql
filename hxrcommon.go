@@ -593,7 +593,7 @@ func FQ_instr(str string) string {
 }
 
 func PrintSQL(a ...interface{}) {
-	log.Println(a)
+	//log.Println(a)
 }
 
 //替换所有位数的0
