@@ -15,7 +15,6 @@ package {{.PkgName}}
 
 import (
 	"context"
-	"fmt"
 	"encoding/json"
 	{{if .UseStrConv}}"strconv"{{end}}
 	{{if .EnableBatch }}"sync"{{end}}
