@@ -4,7 +4,7 @@ import (
 	"log"
 	"runtime"
 	"go/ast"
-	common "github.com/cao-guang/whysql/pkg"
+	common "whysql/pkg"
 	"strings"
 	"flag"
 	"os"
@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"strconv"
 )
+
 
 
 var (
