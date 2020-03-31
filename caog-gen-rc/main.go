@@ -16,6 +16,7 @@ import (
 	"strconv"
 )
 
+
 var (
 	encode        = flag.String("encode", "", "encode type: json/pb/raw/gob/gzip")
 	mcType        = flag.String("type", "", "type: get/set/del/replace/only_add")
