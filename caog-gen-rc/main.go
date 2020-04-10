@@ -136,7 +136,7 @@ func genHeader(opts []*options) (src string) {
 func genBody(opts []*options) (res string) {
 	for _, option := range opts {
 		src := getNewTemplate(option)
-		src = strings.Replace(src, "KEY", option.keyType, -1)
+		src = strings.Replace(src, "KEYSS", option.keyType, -1)
 		src = strings.Replace(src, "NAME", option.name, -1)
 		src = strings.Replace(src, "VALUE", option.ValueType, -1)
 		src = strings.Replace(src, "GROUPSIZE", strconv.Itoa(option.GroupSize), -1)

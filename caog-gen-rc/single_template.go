@@ -4,7 +4,7 @@ import "strings"
 
 var _singleGetTemplate = `
 // NAME {{or .Comment "get data from rc"}} 
-func (d *{{.StructName}}) NAME(c context.Context,h KEY{{.ExtraArgsType}}) (res VALUE, err error) {
+func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res VALUE, err error) {
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
@@ -27,7 +27,7 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEY{{.ExtraArgsType}}) (res V
 
 var _singleSetTemplate = `
 // NAME {{or .Comment "Set data to rc"}} 
-func (d *{{.StructName}}) NAME(c context.Context, h KEY, data VALUE {{.ExtraArgsType}}) (err error) {
+func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraArgsType}}) (err error) {
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
@@ -54,7 +54,7 @@ var _singleReplaceTemplate = strings.Replace(_singleSetTemplate, "Set", "Replace
 
 var _singleDelTemplate = `
 // NAME {{or .Comment "delete data from rc"}} 
-func (d *{{.StructName}}) NAME(c context.Context, key KEY {{.ExtraArgsType}}) (err error) {
+func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) (err error) {
 	r:= d.redis
 	conn := r.Conn(c)
 	pipe :=r.Pipeline()
