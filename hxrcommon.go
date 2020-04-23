@@ -333,7 +333,9 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 				delete(data, key)
 			}
 			var arrs []interface{}
-			arrs = append(arrs, arr)
+			for _,v:=range arr{
+				arrs = append(arrs, v)
+			}
 			count, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
 		} else {
 			m, _ := d.DB.Table(tablename).Where(key, value).First()
@@ -886,7 +888,41 @@ func PostGoApi(godns string, method string, parames string) (string, error) {
 	fmt.Println("PostGoApi返回结果：" + objstr)
 	return objstr, err
 }
+func GetCount(db gorose.IOrm, sql string) (m int64, errs error) {
+	var err error
 
+	pat := `(?i:order)[\s|\S]+(?i:by)[\s|\S]+$` //正则
+	reg, _ := regexp.Compile(pat)
+	sql = reg.ReplaceAllString(sql, "")
+	sql = fmt.Sprintf("SELECT count(*) TOTAL FROM (%s) A", sql)
+	resultSlice, err := db.Query(sql)
+	if err != nil {
+		return 0, err
+	} else {
+		if len(resultSlice) > 0 {
+			a := fmt.Sprintf("%d", resultSlice[0]["TOTAL"])
+			b, _ := strconv.ParseInt(a, 10, 64)
+			return b, nil
+
+		} else {
+			return 0, nil
+		}
+	}
+}
+func GetPageRows(db gorose.IOrm, sql string, page int, rows int) (result []gorose.Data, errs error) {
+	start := (page - 1) * rows
+	var fenye = fmt.Sprintf(" limit %d,%d ", start, rows)
+	sSql := sql + fenye
+	PrintSQL("GetPageRows===>", sSql)
+	return db.Query(sSql)
+}
+func QueryList(db gorose.IOrm, sql string, page int, rows int) (total string,result []gorose.Data, err error) {
+	count, err := GetCount(db, sql)
+	a01, err := GetPageRows(db, sql, page, rows)
+	result=a01
+	total = strconv.FormatInt(count,10)
+	return total,result,err
+}
 //base64解密算法
 func Base64DecodeString(str string) string {
 	decoded, _ := base64.StdEncoding.DecodeString(str)
