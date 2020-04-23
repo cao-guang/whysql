@@ -1,4 +1,4 @@
-module github.com/cao-guang/whysql
+module whysql
 
 go 1.14
 
