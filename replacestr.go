@@ -7,7 +7,7 @@ func SafeReplaceParames(param string) string {
 	a = strings.Replace(param, "'", "‘", -1)
 	//a = strings.Replace(a, "\"", "“", -1)
 	a = strings.Replace(a, "&", "", -1)
-	a = strings.Replace(a, "#", "", -1)
+	//a = strings.Replace(a, "#", "", -1)
 	a = strings.Replace(a, "!", "！", -1)
 	a = strings.Replace(a, "*", "", -1)
 	a = strings.Replace(a, "^", "", -1)
