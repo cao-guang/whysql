@@ -307,6 +307,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 	var strObj string
 	var err error
 	var isadd bool = true
+	var isupdatekey=false;
 
 	//dstVal := reflect.ValueOf(param)
 	//sliceVal := reflect.Indirect(dstVal)
@@ -338,6 +339,11 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 			}
 			count, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
 		} else {
+			old_val:=upmap["OLD_"+key]
+			if(old_val!=nil && old_val!=""){
+				value=old_val;
+				isupdatekey=true
+			}
 			m, _ := d.DB.Table(tablename).Where(key, value).First()
 			if m != nil {
 				data := Struct2Map2(param, updatelist) //获取需要修改的map对象，最后跟m合并下，变化的才去修改
@@ -358,7 +364,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 				}
 				//lastdata = UnionDiffMap(lastdata, upmap)
 				_, ok := lastdata[key]
-				if ok {
+				if ok && !isupdatekey {
 					delete(lastdata, key)
 				}
 				msg = "修改"
@@ -373,7 +379,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 			}
 		}
 	}
-	println(d.DB.LastSql)
+	PrintSQL(d.DB.LastSql)
 	if isadd && d.DB.LastInsertId() > 0 { //给主键对象赋值
 		v.Field(0).SetString(strconv.FormatInt(d.DB.LastInsertId(), 10))
 	}
@@ -595,7 +601,7 @@ func FQ_instr(str string) string {
 }
 
 func PrintSQL(a ...interface{}) {
-	//log.Println(a)
+	//fmt.Println(a)
 }
 
 //替换所有位数的0
