@@ -337,7 +337,9 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 			for _,v:=range arr{
 				arrs = append(arrs, v)
 			}
-			count, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
+			if(len(data)>0){
+				count, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
+			}
 		} else {
 			old_val:=upmap["OLD_"+key]
 			if(old_val!=nil && old_val!=""){
