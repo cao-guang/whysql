@@ -55,24 +55,16 @@ var _singleReplaceTemplate = strings.Replace(_singleSetTemplate, "Set", "Replace
 var _singleDelTemplate = `
 // NAME {{or .Comment "delete data from rc"}} 
 func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) (err error) {
-	r:= d.redis
+	r := d.redis
 	conn := r.Conn(c)
-	pipe :=r.Pipeline()
+	defer  conn.Close()
 	val, err := redis.Strings(conn.Do("KEYS", "*"+key+"*"))
+	conn.Send("MULTI")
 	for i, _ := range val {
-		pipe.Send("DEL", val[i])
+		conn.Send("DEL", val[i])
 	}
-	replies, err :=pipe.Exec(c)
+	_, err = redis.Values(conn.Do("EXEC"))
 	if err!=nil{
-		log.Error("NAME pipe.Exec error(%v)", replies)
-		log.Error("NAME pipe.Exec error(%v)", err)
-	}
-	if err = conn.Flush(); err != nil {
-		log.Error("NAME conn.Flush error(%v)", err)
-		return
-	}
-	err = r.Close()
-	if err != nil {
 		log.Error("NAME conn.Close error(%v)", err)
 	}
 	return
