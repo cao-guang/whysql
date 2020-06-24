@@ -58,10 +58,25 @@ func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) 
 	r := d.redis
 	conn := r.Conn(c)
 	defer  conn.Close()
-	val, err := redis.Strings(conn.Do("KEYS", "*"+key+"*"))
+	iter := 0
+	var keys []string
+	for {
+		if arr, err := red.MultiBulk(conn.Do("SCAN", iter,"MATCH","*"+key+"*")); err != nil {
+			panic(err)
+		} else {
+			iter, _ = red.Int(arr[0], nil)
+			key,_:=red.Strings(arr[1], nil)
+			for _, value := range key {
+				keys=append(keys,value)
+			}
+		}
+		if iter == 0  {
+			break
+		}
+	}
 	conn.Send("MULTI")
-	for i, _ := range val {
-		conn.Send("DEL", val[i])
+	for i, _ := range keys {
+		conn.Send("DEL", keys[i])
 	}
 	_, err = redis.Values(conn.Do("EXEC"))
 	if err!=nil{

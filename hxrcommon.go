@@ -944,3 +944,16 @@ func Base64EncodeString(str string) string {
 	encoded := base64.StdEncoding.EncodeToString(strbytes)
 	return encoded
 }
+func GetDataFirstMap(db gorose.IOrm, sql string) (map[string]interface{}, error) {
+	var rows []map[string]interface{}
+	_,err:=db.Table(&rows).Query(sql)
+	if(err!=nil){
+		PrintSQL(sql)
+		return nil,err
+	}
+	if(len(rows)>0){
+		return  rows[0],nil
+	}else{
+		return nil,nil;
+	}
+}
