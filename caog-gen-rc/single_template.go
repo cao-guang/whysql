@@ -73,12 +73,10 @@ func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) 
 		if iter == 0  {
 			break
 		}
-	}
-	conn.Send("MULTI")
+	} 
 	for i, _ := range keys {
 		conn.Send("DEL", keys[i])
-	}
-	_, err = redis.Values(conn.Do("EXEC"))
+	} 
 	if err!=nil{
 		log.Error("NAME conn.Close error(%v)", err)
 	}

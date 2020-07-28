@@ -381,7 +381,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 			}
 		}
 	}
-	PrintSQL(d.DB.LastSql)
+	PrintSQL(d.DB.LastSql())
 	if isadd && d.DB.LastInsertId() > 0 { //给主键对象赋值
 		v.Field(0).SetString(strconv.FormatInt(d.DB.LastInsertId(), 10))
 	}
