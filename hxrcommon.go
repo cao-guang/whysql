@@ -316,6 +316,9 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 	v := obj_v.Elem()
 	typeOfType := v.Type()
 	tablename := typeOfType.Name()
+	if(upmap!=nil && upmap["TABLE_NAME"] !=nil && upmap["TABLE_NAME"] !=""){
+		tablename=upmap["TABLE_NAME"].(string)
+	}
 	key := typeOfType.Field(0).Name
 	value := v.Field(0).Interface()
 	var count int64
@@ -550,18 +553,18 @@ func Map_GetParamsMap(h string, model interface{}) (string, map[string]interface
 		}
 		//pars, _ok := m["parames"]
 		//if _ok {
-			str := h
-			if err := json.Unmarshal([]byte(str), &m2); err == nil {
-				for k, _ := range m2 {
-					if strings.ToUpper(k) != k {
-						m2[strings.ToUpper(k)] = m2[k] //把小写的赋值给大写，然后小写的
-						delete(m2, k)
-					}
+		str := h
+		if err := json.Unmarshal([]byte(str), &m2); err == nil {
+			for k, _ := range m2 {
+				if strings.ToUpper(k) != k {
+					m2[strings.ToUpper(k)] = m2[k] //把小写的赋值给大写，然后小写的
+					delete(m2, k)
 				}
-				return "", m2, nil
-			}else{
-				return "", m2, nil
 			}
+			return "", m2, nil
+		}else{
+			return "", m2, nil
+		}
 		//} else {
 		//	return "", m2, nil
 		//}
@@ -793,6 +796,8 @@ type BasePage struct {
 	Rows  int    `json:"rows"`
 	Sort  string `json:"sort"`
 	Order string `json:"order"`
+	Order_Name   string `json:"order_name"`
+	Order_Desc   string `json:"order_desc"`
 }
 
 func (c *BasePage) Init() {
@@ -802,6 +807,7 @@ func (c *BasePage) Init() {
 	if c.Rows == 0 {
 		c.Rows = 20
 	}
+	
 }
 
 type MyError struct {
@@ -956,4 +962,20 @@ func GetDataFirstMap(db gorose.IOrm, sql string) (map[string]interface{}, error)
 	}else{
 		return nil,nil;
 	}
+}
+
+func Chunk(db gorose.IOrm,sql string,limit int, callback func([]gorose.Data) error) (err error) {
+	var page = 1
+	result, err := GetPageRows(db, sql, page, limit)
+	if err != nil {
+		return
+	}
+	for len(result) > 0 {
+		if err = callback(result); err != nil {
+			break
+		}
+		page++
+		result, _ =  GetPageRows(db, sql, page, limit)
+	}
+	return
 }
