@@ -269,6 +269,7 @@ func (d *DataHelper) AddOrUpdate(param interface{}, updatelist []string, addlist
 		RemoveEmptyMap(data)
 		count, err = d.DB.Table(tablename).Data(data).Insert()
 	} else {
+		d.DB.ResetWhere()
 		m, _ := d.DB.Table(tablename).Where(key, value).First()
 		if m != nil {
 			data := Struct2Map2(param, updatelist) //获取需要修改的map对象，最后跟m合并下，变化的才去修改
@@ -278,6 +279,7 @@ func (d *DataHelper) AddOrUpdate(param interface{}, updatelist []string, addlist
 				delete(lastdata, key)
 			}
 			msg = "修改"
+			d.DB.ResetWhere()
 			count, err = d.DB.Table(tablename).Data(lastdata).Where(key, value).Update()
 			isadd = false
 		} else {
@@ -341,6 +343,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 				arrs = append(arrs, v)
 			}
 			if(len(data)>0){
+				d.DB.ResetWhere()
 				count, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
 			}
 		} else {
@@ -349,6 +352,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 				value=old_val;
 				isupdatekey=true
 			}
+			d.DB.ResetWhere()
 			m, _ := d.DB.Table(tablename).Where(key, value).First()
 			if m != nil {
 				data := Struct2Map2(param, updatelist) //获取需要修改的map对象，最后跟m合并下，变化的才去修改
@@ -374,6 +378,7 @@ func (d *DataHelper) AddOrUpdateMap(param interface{}, updatelist []string, addl
 				}
 				msg = "修改"
 				if len(lastdata) > 0 {
+					d.DB.ResetWhere()
 					count, err = d.DB.Table(tablename).Data(lastdata).Where(key, value).Update()
 				}
 				isadd = false
@@ -417,8 +422,10 @@ func (d *DataHelper) UpdateField(param interface{}, list []string) (string, erro
 	if len(arr) > 1 {
 		var arrs []interface{}
 		arrs = append(arrs, arr)
+		d.DB.ResetWhere()
 		_, err = d.DB.Table(tablename).Data(data).WhereIn(key, arrs).Update()
 	} else {
+		d.DB.ResetWhere()
 		_, err = d.DB.Table(tablename).Data(data).Where(key, value).Update()
 	}
 	PrintSQL(d.DB.LastSql)
@@ -807,7 +814,7 @@ func (c *BasePage) Init() {
 	if c.Rows == 0 {
 		c.Rows = 20
 	}
-	
+
 }
 
 type MyError struct {
