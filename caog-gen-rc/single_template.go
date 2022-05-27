@@ -8,6 +8,7 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
+	cacheKey = library.XT_HCBS + ":" + cacheKey
 	defer conn.Close()
 	bs, err = redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
@@ -25,18 +26,20 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res
 }
 `
 
+//, "EX", {{.ExpireCode}} 去掉设置缓存过期时间变为永不过期
 var _singleSetTemplate = `
 // NAME {{or .Comment "Set data to rc"}} 
 func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraArgsType}}) (err error) {
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
+	cacheKey = library.XT_HCBS + ":" + cacheKey
 	defer conn.Close()
 	if bs, err = json.Marshal(data); err != nil {
 		log.Error("json.Marshal(%+v) error(%v)", data, err)
 		return
 	}
-	_, err =conn.Do("SET", cacheKey, bs, "EX", {{.ExpireCode}})
+	_, err =conn.Do("SET", cacheKey, bs)
 	if err != nil {
 		log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
 		return
