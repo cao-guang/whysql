@@ -1,19 +1,20 @@
 package main
 
 import (
-	"log"
-	"runtime"
-	"go/ast"
-	common "github.com/cao-guang/whysql/pkg"
-	"strings"
-	"flag"
-	"os"
-	"regexp"
+	"bufio"
 	"bytes"
-	"text/template"
-	"path/filepath"
+	"flag"
+	common "github.com/cao-guang/whysql/pkg"
+	"go/ast"
 	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"regexp"
+	"runtime"
 	"strconv"
+	"strings"
+	"text/template"
 )
 
 
@@ -87,12 +88,15 @@ type options struct {
 	CheckNullCode      string
 	ExpireNullCode     string
 	EnableNullCode     bool
+	ModelName             string //项目名 如：app-user
+	UseLib                bool   //是否引用library
 }
 
 
 
 func genHeader(opts []*options) (src string) {
 	option := options{PkgName: os.Getenv("GOPACKAGE"), UseMemcached: false}
+
 	var packages []string
 	packagesMap := map[string]bool{`"context"`: true}
 	for _, opt := range opts {
@@ -116,6 +120,25 @@ func genHeader(opts []*options) (src string) {
 		if opt.EnableBatch {
 			option.EnableBatch = true
 		}
+		option.UseLib = true
+		file, err := os.Open("../../go.mod")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		i := 0
+		var linetext string
+		for scanner.Scan() {
+			i++
+			linetext = scanner.Text()
+			if i == 1 {
+				break
+			}
+			return
+		}
+		linearr := strings.Split(linetext, " ")
+		option.ModelName = linearr[1]
 	}
 	option.ImportPackage = strings.Join(packages, "\n")
 	src = _headerTemplate

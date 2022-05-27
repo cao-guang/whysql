@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	{{if .UseStrConv}}"strconv"{{end}}
 	{{if .EnableBatch }}"sync"{{end}}
+	{{if .UseLib}}"{{.ModelName}}/library"{{end}}
 NEWLINE
 	{{if .UseMemcached }}"github.com/go-kratos/kratos/pkg/cache/redis"{{end}}
 	{{if .EnableBatch }}"github.com/go-kratos/kratos/pkg/sync/errgroup"{{end}}
