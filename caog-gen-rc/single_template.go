@@ -65,7 +65,8 @@ func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) 
 	var keys []string
 	for {
 		if arr, err := red.MultiBulk(conn.Do("SCAN", iter,"MATCH",library.XT_HCBS +"*"+key+"*")); err != nil {
-			panic(err)
+			log.Error("NAME conn.Close error(%v)", err)
+			return
 		} else {
 			iter, _ = red.Int(arr[0], nil)
 			key,_:=red.Strings(arr[1], nil)
