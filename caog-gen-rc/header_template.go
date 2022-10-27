@@ -15,6 +15,7 @@ package {{.PkgName}}
 
 import (
 	"context"
+	"strings"
 	"encoding/json"
 	{{if .UseStrConv}}"strconv"{{end}}
 	{{if .EnableBatch }}"sync"{{end}}
@@ -23,7 +24,7 @@ NEWLINE
 	{{if .UseMemcached }}"github.com/go-kratos/kratos/pkg/cache/redis"{{end}}
 	{{if .EnableBatch }}"github.com/go-kratos/kratos/pkg/sync/errgroup"{{end}}
 	"github.com/go-kratos/kratos/pkg/log"
-    red "github.com/gomodule/redigo/redis"
+    //red "github.com/gomodule/redigo/redis"
 	{{.ImportPackage}}
 )
 

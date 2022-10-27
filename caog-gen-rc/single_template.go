@@ -33,13 +33,22 @@ func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraAr
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
+	//先对key进行切割给每一个关联的地方都添加进去详细的key
+	arrkey := strings.Split(key, ":")
 	cacheKey = library.XT_HCBS + ":" + cacheKey
 	defer conn.Close()
+	for _, v := range arrkey {
+		_, err = conn.Do("SADD", library.XT_HCBS+":DELKEY:SETKEY:"+v, cacheKey)
+		if err != nil {
+			log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
+			return
+		}
+	}
 	if bs, err = json.Marshal(data); err != nil {
 		log.Error("json.Marshal(%+v) error(%v)", data, err)
 		return
 	}
-	_, err =conn.Do("SET", cacheKey, bs)
+	_, err = conn.Do("SET", cacheKey, bs,"EX",86400)
 	if err != nil {
 		log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
 		return
@@ -61,28 +70,29 @@ func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) 
 	r := d.redis
 	conn := r.Conn(c)
 	defer  conn.Close()
-	iter := 0
-	var keys []string
-	for {
-		if arr, err := red.MultiBulk(conn.Do("SCAN", iter,"MATCH",library.XT_HCBS +"*"+key+"*")); err != nil {
-			log.Error("NAME conn.Close error(%v)", err)
-			break
+	keys := library.XT_HCBS + ":DELKEY:SETKEY:" + key
+	r2, err := conn.Do("SMEMBERS", keys)
+	if err != nil {
+		log.Error("NAME conn.Do(SGET, %s) error(%v)", keys, err)
+		return
+	}
+	temp, ok := r2.([]interface{})
+	if !ok {
+		log.Error("NAME conn.Close error(%v)", err)
+		return
+	}
+	for _, v := range temp {
+		err := conn.Send("DEL", v)
+		if err != nil {
+			log.Error("NAME conn.Do(DEL, %s) error(%v)", keys, err)
+			continue
 		} else {
-			iter, _ = red.Int(arr[0], nil)
-			key,_:=red.Strings(arr[1], nil)
-			for _, value := range key {
-				keys=append(keys,value)
+			err = conn.Send("SREM", keys, v)
+			if err != nil {
+				log.Error("NAME conn.Do(SREM, %s) error(%v)", keys, err)
+				continue
 			}
 		}
-		if iter == 0  {
-			break
-		}
-	} 
-	for i, _ := range keys {
-		conn.Send("DEL", keys[i])
-	} 
-	if err!=nil{
-		log.Error("NAME conn.Close error(%v)", err)
 	}
 	return
 }
