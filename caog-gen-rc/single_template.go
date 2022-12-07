@@ -38,17 +38,25 @@ func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraAr
 	cacheKey = library.XT_HCBS + ":" + cacheKey
 	defer conn.Close()
 	for _, v := range arrkey {
-		_, err = conn.Do("SADD", library.XT_HCBS+":DELKEY:SETKEY:"+v, cacheKey)
-		if err != nil {
-			log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
-			return
-		}
+		if library.IsNum(v) || v[0:1] == "0" {
+			continue
+		}else{
+			err = conn.Send("SADD", library.XT_HCBS+":DELKEY:SETKEY:"+v, cacheKey)
+			if err != nil {
+				log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
+				return
+			}
+			if err = conn.Send("EXPIRE", library.XT_HCBS+":DELKEY:SETKEY:"+v, 86400); err != nil {
+				log.Error("NAME conn.Send error(%v)", err)
+				return
+			} 
+		} 
 	}
 	if bs, err = json.Marshal(data); err != nil {
 		log.Error("json.Marshal(%+v) error(%v)", data, err)
 		return
 	}
-	_, err = conn.Do("SET", cacheKey, bs,"EX",86400)
+	err = conn.Send("SET", cacheKey, bs,"EX",86400)
 	if err != nil {
 		log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
 		return
