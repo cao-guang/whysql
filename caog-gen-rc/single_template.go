@@ -8,7 +8,7 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res
 	var bs []byte
 	conn := d.redis.Conn(c)
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
-	cacheKey = library.XT_HCBS + ":" + cacheKey
+	cacheKey = library.XT_HCBS + ":EXKEY:" + cacheKey
 	defer conn.Close()
 	bs, err = redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
@@ -35,7 +35,7 @@ func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraAr
 	cacheKey := {{.KeyMethod}}({{.ExtraArgs}})
 	//先对key进行切割给每一个关联的地方都添加进去详细的key
 	arrkey := strings.Split(key, ":")
-	cacheKey = library.XT_HCBS + ":" + cacheKey
+	cacheKey = library.XT_HCBS + ":EXKEY:" + cacheKey
 	defer conn.Close()
 	for _, v := range arrkey {
 		if library.IsNum(v) || v[0:1] == "0" {

@@ -1,7 +1,8 @@
 package whysql
 
 import (
-
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -985,4 +986,54 @@ func Chunk(db gorose.IOrm,sql string,limit int, callback func([]gorose.Data) err
 		result, _ =  GetPageRows(db, sql, page, limit)
 	}
 	return
+}
+
+
+func VerifySign (authorization , Method , parames,key,secret string ) (string,error) {
+	auth := strings.Replace(authorization, " ", "+", -1)
+	auth = Base64DecodeString(auth)
+	parameterDict := make(map[string]string)
+	date, _ := GetOneStringByRegex(auth, "date\\=\"(.*?)\",method=\"")
+	parameterDict["date"] = date
+	method, _ := GetOneStringByRegex(auth, "method\\=\"(.*?)\",headers=\"")
+	parameterDict["method"] = method
+	headers, _ := GetOneStringByRegex(auth, "headers\\=\"(.*?)\",algorithm=\"")
+	parameterDict["headers"] = headers
+	algorithm, _ := GetOneStringByRegex(auth, "algorithm\\=\"(.*?)\",signature=\"")
+	parameterDict["algorithm"] = algorithm
+	signature, _ := GetOneStringByRegex(auth, "signature\\=\"(.*?)\"")
+	parameterDict["signature"] = signature
+
+	method = strings.ToLower(method)
+	Method = strings.ToLower(Method)
+	if method != "get" && method != "post" && method != Method {
+		return "Authorization验证失败，请求方式不正确", errors.New("请求方式不正确")
+	}
+	v_signature := "date: '" + date + "'\nparames: '" + parames + "'\napid_key: '" + key + "'"
+	new_signature := ComputeHmac256(v_signature, secret)
+	if new_signature != signature {
+		//log.Error("v_signature:%v  \n  new_signature:%v", v_signature, new_signature)
+		return "Authorization验证失败,参数被篡改", errors.New("参数被篡改")
+	}
+	return "", nil
+}
+
+func ComputeHmac256(message string, secret string) string {
+	key := []byte(secret)
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(message))
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
+
+func GetOneStringByRegex(str, rule string) (string, error) {
+	reg, err := regexp.Compile(rule)
+	if reg == nil || err != nil {
+		return "", errors.New("正则Compile错误:" + err.Error())
+	}
+	//提取关键信息
+	result := reg.FindStringSubmatch(str)
+	if len(result) < 1 {
+		return "", errors.New("没有获取到子字符串")
+	}
+	return result[1], nil
 }
