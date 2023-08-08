@@ -17,8 +17,9 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res
 		}
 		return
 	}
+	gzipData, err := library.GzipDecode(bs)
 	res = new({{.OriginValueType}})
-	if err = json.Unmarshal(bs, res); err != nil {
+	if err = json.Unmarshal(gzipData, res); err != nil {
 		log.Error("json.Unmarshal(%s) error(%v)", string(bs), err)
 		return
 	}
@@ -26,7 +27,7 @@ func (d *{{.StructName}}) NAME(c context.Context,h KEYSS{{.ExtraArgsType}}) (res
 }
 `
 
-//, "EX", {{.ExpireCode}} 去掉设置缓存过期时间变为永不过期
+// , "EX", {{.ExpireCode}} 去掉设置缓存过期时间变为永不过期
 var _singleSetTemplate = `
 // NAME {{or .Comment "Set data to rc"}} 
 func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraArgsType}}) (err error) {
@@ -56,7 +57,8 @@ func (d *{{.StructName}}) NAME(c context.Context, h KEYSS, data VALUE {{.ExtraAr
 		log.Error("json.Marshal(%+v) error(%v)", data, err)
 		return
 	}
-	err = conn.Send("SET", cacheKey, bs,"EX",86400)
+	gzipData, err := library.GzipEncode(bs)
+	err = conn.Send("SET", cacheKey, gzipData,"EX",86400)
 	if err != nil {
 		log.Error("NAME conn.Send(SET, %s) error(%v)", cacheKey, err)
 		return
@@ -105,5 +107,3 @@ func (d *{{.StructName}}) NAME(c context.Context, key KEYSS {{.ExtraArgsType}}) 
 	return
 }
 `
-
-
